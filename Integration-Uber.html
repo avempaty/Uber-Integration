@@ -1,0 +1,94 @@
+<!DOCTYPE HTML> 
+<head>
+    <title>Micello Developer Example</title>    
+    <meta  name="viewport"  content="initial-scale=1.0,  user-scalable=no"  />
+    <!-- Load micellomap.js from micello.com -->
+    <script  type="text/javascript"  src="http://maps.micello.com/webmap/v0/micellomap.js"></script>
+    <!--<script  type="text/javascript"  src="uber.js"></script> -->
+    <!-- Style the map container -- this is a full screen example -->
+    <style type='text/css'>
+        html {width:100%; height:100%; margin:0px;}
+        body {width:100%; height:100%; margin:0px;}
+        #mapElement { /* STYLE YOUR MAP */
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script type='text/javascript'>
+        var apikey = "b6b73416-8094-48f9-80bd-35ad11cee059";
+        var mapControl, mapDataObject, mapCanvas;
+        var clickedID;
+        micello.maps.init (apikey, mapInit);
+        function  mapInit() {
+            mapControl =  new micello.maps.MapControl('mapElement');
+            mapDataObject = mapControl.getMapData();
+            mapControl.onMapClick = onMapClick;
+            mapCanvas = mapControl.getMapCanvas();
+            var customTheme = {
+                "m" : {
+                    "RouteStart": {
+                        "src": "http://maps.micello.com/webmap/markers/RedPin18x36.png",
+                        "ox": 11,
+                        "oy": 35
+                    },
+                    "RouteEnd": {
+                        "src": "Uber Pin w- Shadow.png",
+                        "ox": 11,
+                        "oy": 35
+                    }
+                }
+            }
+            if( customTheme ) {
+                mapCanvas.setOverrideTheme(customTheme);
+            }
+            mapDataObject.loadCommunity(15);  
+        }
+
+        function onMapClick (mx, my, clicked) {
+            if (clicked) {
+                addMenuItem(clicked);    // whenever an item is clicked it generated popup window
+                clickedID = clicked.id; //save ID for navigation
+            }
+        }
+
+        function addMenuItem(clicked){
+            var menuItems = new Array();
+            level = mapDataObject.getCurrentLevel();
+            if (mapControl.popupFlags && micello.maps.MapControl.SHOW_INFO) {
+                mapControl.loadInfoCmd(clicked, menuItems);
+            }
+            // Add menu your custom menu item
+            if (mapControl.popupFlags) {
+                AddToMenu(clicked, level.id, menuItems);
+            }
+            // end
+           
+            if (mapControl.popupFlags && micello.maps.MapControl.SHOW_INSIDE) {
+                mapControl.loadInsideCmd(clicked, menuItems);
+            }
+            if (mapControl.popupFlags && micello.maps.MapControl.SHOW_NAV) {
+                mapControl.loadNavCmd(clicked, level.id, menuItems);
+            }
+            if (mapControl.popupFlags && micello.maps.MapControl.SHOW_REPORT) {
+                mapControl.loadInputCmd(clicked, menuItems);
+            }
+            mapControl.showPopupMenu(clicked, clicked.nm, menuItems);
+        }
+        function AddToMenu (clicked, levelId, menuItems) {
+            if (clicked.id) {
+                var menuItem = {
+                    name : "Call an Uber",
+                    func : function() {
+                        mapControl.hideInfoWindow();
+                        mapControl.requestNavToGeom(mapDataObject.geomMap[clickedID].g, mapDataObject.geomMap[clickedID].pl.id, true);
+                    }
+                };
+                menuItems.push(menuItem);
+            }
+        };
+    </script>   
+</head>
+<body>
+<div id='mapElement'></div>
+</body>
+</HTML>
